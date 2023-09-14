@@ -12,10 +12,16 @@ ROLE_CHOICE = (
     (3, 'Paciente')
 )
 
-# IMPORTAÇÃO DA MODEL PROFILE -----------------------------------------------
+# IMPORTAÇÃO DAS MODELS -----------------------------------------------
 '''TODA VEZ que quisermos que uma MODEL se TORNE UMA TABELA do Banco de Dados,
  precisamo IMPORTA-LA neste arquivo (__INIT__.PY)'''
  
-# Model importada (Se tornou uma tabela do Banco de Dados)
-
+# Models importadas (Se tornaram TABELAS do Banco de Dados)
+from .Rating import Rating
+from .DayWeek import DayWeek
+from .State import State
+from .City import City
+from .Neighborhood import Neighborhood
+from .Address import Address
+from .Speciality import Speciality
 from .Profile import Profile 

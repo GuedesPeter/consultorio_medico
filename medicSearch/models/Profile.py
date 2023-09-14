@@ -9,7 +9,9 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     token = models.CharField(max_length=255, null=True, blank=True)
-
+    favorites = models.ManyToManyField(User, blank=True, related_name='favorites')  # ALTERAÇÕES REALIZADAS
+    specialties = models.ManyToManyField(Speciality, blank=True, related_name='specialties')  # ALTERAÇÕES REALIZADAS
+    addresses = models.ManyToManyField(Address, blank=True, related_name='addresses')  # ALTERAÇÕES REALIZADAS
 
 
     # Metodo para exibir o objeto quando quisermos acessar através de sua instância
