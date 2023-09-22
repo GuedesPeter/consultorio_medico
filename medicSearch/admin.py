@@ -3,37 +3,54 @@ from .models import *  # IMPORTA AS MODELS PARA REGISTRO ---------
 
 # CUSTOMIZANDO A MODEL PROFILE --------------------------------
 class ProfileAdmin(admin.ModelAdmin):
-    # CRIA UM FILTRO DE HIERARQUIA COM DATAS ------------------------
-    date_hierarchy = 'created_at'
-    # PERMITE DIZER AO DJANGO OS ELEMENTOS EXIBIDOS NA LISTAGEM DE DADOS DA MODEL -------
-    list_display = ['user', 'role', 'birthday']
-    # PERMITE ALTERAR A APRESENTAÇÃO DOS CAMPOS VAZIOS EM NOSSO SISTEMA ----------------
-    empty_value_display = 'Vazio'
-    # DEIXA OUTRAS LINHAS COM LINK DE EDIÇÃO HABILITADO
-    list_display_links = ['user', 'role']
-    # PERMITE CRIAR UM FILTRO DE DADOS BASEADO NOS CAMPOS QUE FOREM ADICIONADOS A ESSA LISTA
-    # OBS: Para acessar um atributo da Foreing Key (user) que faz referencia a model de usuário
-    # foi necessario chamar o atributo 'user' e passar dois underlines(ANTES DE is_active) para separa-lo
-    # do atributo que faz referencia a model USER 
-    list_filter = ['user__is_active','role']
-    # PERMITE DIZER QUAIS CAMPOS SERÃO EXIBIDOS NO FORMULÁRIO E QUAIS NÃO
-    # OBS: Um campo que seja NOT NULL sem valor default devera ser adicionado na listagem,
-    # do contrario um erro ocorrerá na hora de salvar o dado, dizendo que o campo NOT NULL
-    # NÃO PODERÁ FICAR EM BRANCO
-    fields = ['user',('role'), 'image', 'birthday', 'specialties', 'adresses']
-    # OPOSTO DO FIELDS - REMOVERÁ DO FORMULÁRIO OS CAMPO QUE FOREM ADICIONADOS A LISTA
-    exclude = ['favorites', 'created_at', 'updated_at']
-    # DEIXA OS CAMPOS APENAS COMO LEITURA NO FORMULARIO DE EDIÇÃO E CRIAÇÃO
-    # Usado para que NÃO SEJA PERMITIDO alterar o usuário atrelado ao perfil
-    # Aplica o recurso na edição e criação
-    readonly_fields = ['user']
-    # CAMPOS QUE PODERÃO SER PESQUISADOS NA TELA DO ADMIN
-    # Os campos que representam relacionamento pracisamos colocar:
-    # NOME DO CAMPO - dois UNDERLINES - NOME DO ATRIBUTO QUE SERÁ PESQUISADO
-    search_fields = ['user__username']
+    
+     date_hierarchy = 'created_at'
+     list_display = ['user', 'birth', 'specialtiesList', 'addressesList']
+     empty_value_display = 'Vazio'
+     #list_display_links = ['user', 'specialtiesList', 'adressesList']
+     list_filter = ['user__is_active','role']
+    #fields = ['user',('role'), 'image', 'birthday', 'specialties', 'adresses']
+     exclude = ['favorites', 'created_at', 'updated_at']
+     readonly_fields = ['user']
+     search_fields = ['user__username']
+     # Avançado ----------------------------------------------------------------
+     fieldsets = [
+        ('Usuário', {
+            'fields': ('user', 'birthday', 'image')
+        }),
+        ('Função', {
+            'fields': ('role', )
+        }),
+        ('Extras', {
+            'fields': ('specialties', 'adresses')
+        })
+    ]
+    # Custom List_display --------------------------------------------------
+    # list_display = ['user', 'birth']
+     def birth(self,obj):
+          if obj.birthday:
+               return obj.birthday.strftime('%d-%m-%Y')
+          
+    # Custom empty_value_display --------------------------------------------      
+     def birth(self,obj):
+          if obj.birthday:
+               return obj.birthday
+     birth.empty_value_display = '__/__/____'
 
-
-
+     # Custom List_display ManyTo Many ------------------------------------------------
+     def specialtiesList(self, obj):
+          for i in obj.specialties.all():
+               return [i.name]
+     def addressesList(self, obj):
+          return [i.name for i in obj.addresses.all()]
+     
+     # ADICIONANDO ARQUIVOS CSS E JS ---------------------------------------------------
+     class Media:
+        css = {
+              "all": ("css/custom.css")
+        }
+        js = ("js/custom.js")       
+    
 
 
 # Register your models here.
