@@ -1,0 +1,1 @@
+from .HomeUrls import * # Permite que o Django acesse o arquivo HomeUrls.py

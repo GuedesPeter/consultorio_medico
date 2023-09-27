@@ -14,13 +14,15 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path
+from django.conf import settings
 #  IMPORTAÇÕES PARA UPLOAD DE IMAGENS -------------------------
 from django.conf.urls.static import static
-from django.conf import settings
+from django.contrib import admin
+from django.urls import include, path, re_path
 
 #  + STATIC ADICIONADO SAO FINAL DE URLPATTERNS ------------------------
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # Adiciona as URLS do meu app MEDICSEARCH (medicsearch/urls/HomeUrls.py) --------------------------------
+    path('',include('medicSearch.urls.HomeUrls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
