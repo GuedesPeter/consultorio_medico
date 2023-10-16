@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 from medicSearch.models import Profile # Importando a model Profile
+from django.db.models import Q # Funciona como OR no sql
 
 
 def list_medics_view(request):
@@ -9,7 +10,24 @@ def list_medics_view(request):
     city = request.GET.get("city")
     state = request.GET.get("state")
  
-    medics = Profile.objects.all()
-    print (medics)
+    medics = Profile.objects.filter(role=2).all() # filtra todos os perfis do tipo médico
+    
+# Busca por: NOME - ESPECIALIDADE -BAIRRO - CIDADE - ESTADO
+    if name is not None and name != '':
+        #Filtra o nome buscado tanto em (Q)first_name quanto em (Q)user name 
+        medics = medics.filter(Q(user__first_name=name) | Q(user__username__contains=name))
+    if speciality is not None:
+        medics = medics.filter(specialties__id=speciality)
+
+    if neighborhood is not None:
+        medics = medics.filter(addresses__neighborhood=neighborhood)
+    else:
+        if city is not None:
+            medics = medics.filter(addresses__neighborhood__city=city)
+        elif state is not None:
+            medics = medics.filter(addresses__neighborhood__city__state=state)
+
+    print (medics.all())
+       
     return HttpResponse('Listagem de 1 ou mais médicos.')
 
