@@ -1,9 +1,9 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from medicSearch.models import Profile, Rating # Importando a model Profile e Rating
+from medicSearch.models import Profile, Rating
 from medicSearch.forms.MedicForm import MedicRatingForm
-from django.db.models import Q # Funciona como OR no sql
+from django.db.models import Q
 from django.core.paginator import Paginator
-
 
 def list_medics_view(request):
     name = request.GET.get("name")
@@ -11,13 +11,10 @@ def list_medics_view(request):
     neighborhood = request.GET.get("neighborhood")
     city = request.GET.get("city")
     state = request.GET.get("state")
- 
-    medics = Profile.objects.filter(role=2).all() # filtra todos os perfis do tipo médico
-    
-# Busca por: NOME - ESPECIALIDADE -BAIRRO - CIDADE - ESTADO
+
+    medics = Profile.objects.filter(role=2)
     if name is not None and name != '':
-        #Filtra o nome buscado tanto em (Q)first_name quanto em (Q)user name 
-        medics = medics.filter(Q(user__first_name=name) | Q(user__username__contains=name))
+        medics = medics.filter(user__first_name__contains=name)
     if speciality is not None:
         medics = medics.filter(specialties__id=speciality)
 
@@ -29,25 +26,20 @@ def list_medics_view(request):
         elif state is not None:
             medics = medics.filter(addresses__neighborhood__city__state=state)
 
-    #Paginação - Implementando a classe Paginator
     if len(medics) > 0:
-        paginator = Paginator(medics, 8) # Objeto de consulta e qtde. retornada para o html.
-        page = request.GET.get('page') # Obtem as páginas
-        medics = paginator.get_page(page) # Verifica qual página foi selecionada pelo usuário e gera resultado como base nela.
+        paginator = Paginator(medics, 8)
+        page = request.GET.get('page')
+        medics = paginator.get_page(page)
 
+    get_copy = request.GET.copy()
+    parameters = get_copy.pop('page', True) and get_copy.urlencode()
 
-    #Soluciona o problema de perda de parâmetros da url quando há troca de página
-    get_copy = request.GET.copy() #Copia os parametros da url atual
-    parameters = get_copy.pop('page', True) and get_copy.urlencode() #Remove o parametro 'page' atual e faz com que não se perca os
-    #parametros da url atual ao trocar de página
-
-    context = { 
+    context = {
         'medics': medics,
         'parameters': parameters
     }
-       
+    # Altere `HttpResponse` e adicione `render` no lugar igual ao código a seguir:
     return render(request, template_name='medic/medics.html', context=context, status=200)
-
 
 def add_favorite_view(request):
     page = request.POST.get("page")
@@ -89,7 +81,6 @@ def add_favorite_view(request):
 
     return redirect(to='/medic/%s' % arguments)
 
-
 def remove_favorite_view(request):
     page = request.POST.get("page")
     id = request.POST.get("id")
@@ -104,22 +95,22 @@ def remove_favorite_view(request):
     except Exception as e:
         print("Erro %s" % e)
         msg = "Um erro ocorreu ao remover o médico nos favoritos."
-
         _type = "danger"
 
-        if page:
-            arguments = "?page=%s" % (page)
-        else:
-            arguments = "?page=1"
 
-        arguments += "&msg=%stype=%s" % (msg, _type)
+    if page:
+        arguments = "?page=%s" % (page)
+    else:
+        arguments = "?page=1"
 
-        return redirect(to='/profile/%s' % arguments)
+    arguments += "&msg=%s&type=%s" % (msg, _type)
 
+    return redirect(to='/profile/%s' % arguments)
 
+@login_required
 def rate_medic(request, medic_id=None):
     medic = Profile.objects.filter(user__id=medic_id).first()
-    rating = Rating.objects.filter(user=request.user, user_rated=medic.user).firts()
+    rating = Rating.objects.filter(user=request.user, user_rated=medic.user).first()
     message = None
     initial = {'user': request.user, 'user_rated': medic.user}
 
@@ -127,13 +118,13 @@ def rate_medic(request, medic_id=None):
         ratingForm = MedicRatingForm(request.POST, instance=rating, initial=initial)
     else:
         ratingForm = MedicRatingForm(instance=rating, initial=initial)
-    
+
     if ratingForm.is_valid():
         ratingForm.save()
-        message = {'type': 'success', 'text': 'Avaliação salva com sucesso.'}
+        message = {'type': 'success', 'text': 'Avaliação salva com sucesso'}
     else:
         if request.method == 'POST':
-            message = {'type': 'danger', 'text': 'Erro ao salvar a avaliação.'}
+            message = {'type': 'danger', 'text': 'Erro ao salvar avaliação'}
 
     context = {
         'ratingForm': ratingForm,
