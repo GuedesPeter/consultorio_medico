@@ -6,7 +6,7 @@ DEBUG = True
 SECRET_KEY = 'django-insecure--e!q6qi^3kats#r$aspcqp!7&sx2kfx#%%34k(rlr))8mjsd4*'
 
 # VARIÁVEL QUE CONFIGURA IP INDIVIDUAL POR AMBIENTE
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 DATABASES = {
